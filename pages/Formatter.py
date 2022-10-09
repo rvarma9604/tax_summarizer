@@ -163,17 +163,76 @@ def formatter():
                 )
                 credit_descriptions_map[desc] = renamed_to
 
-        st.write(f"{debit_descriptions_map}")
-        print(st.session_state)
-
-        use_regex = st.radio(
-            "Want to use regex?",
+        use_find_replace = st.radio(
+            "Want to use find and replace?",
             options=["Yes", "No"],
-            help="regex will override the above behaviour",
+            help="find and replace will override the above behaviour",
+            horizontal=True,
         )
 
-        if use_regex == "Yes":
-            pass
+        if use_find_replace == "Yes":
+            fr_placeholder = st.empty()
+
+            if "debit_fr_count" not in st.session_state:
+                st.session_state["debit_fr_count"] = 1
+
+            if "credit_fr_count" not in st.session_state:
+                st.session_state["credit_fr_count"] = 1
+
+            with fr_placeholder.container():
+                (
+                    debit_find_desc_col,
+                    debit_replace_col,
+                    credit_find_desc_col,
+                    credit_replace_col,
+                ) = st.columns(4)
+
+                with debit_find_desc_col:
+                    if st.button("Add", key=1):
+                        st.session_state["debit_fr_count"] += 1
+
+                with debit_replace_col:
+                    if (
+                        st.button("Delete", key=2)
+                        and st.session_state["debit_fr_count"] > 1
+                    ):
+                        st.session_state["debit_fr_count"] -= 1
+
+                with debit_find_desc_col:
+                    for row in range(st.session_state["debit_fr_count"]):
+                        st.text_input(
+                            label=f"debit_f_{row}", label_visibility="collapsed"
+                        )
+
+                with debit_replace_col:
+                    for row in range(st.session_state["debit_fr_count"]):
+                        st.text_input(
+                            label=f"debit_r_{row}", label_visibility="collapsed"
+                        )
+
+                # credit
+                with credit_find_desc_col:
+                    if st.button("Add", key=3):
+                        st.session_state["credit_fr_count"] += 1
+
+                with credit_replace_col:
+                    if (
+                        st.button("Delete", key=4)
+                        and st.session_state["credit_fr_count"] > 1
+                    ):
+                        st.session_state["credit_fr_count"] -= 1
+
+                with credit_find_desc_col:
+                    for row in range(st.session_state["credit_fr_count"]):
+                        st.text_input(
+                            label=f"credit_f_{row}", label_visibility="collapsed"
+                        )
+
+                with credit_replace_col:
+                    for row in range(st.session_state["credit_fr_count"]):
+                        st.text_input(
+                            label=f"credit_r_{row}", label_visibility="collapsed"
+                        )
 
     if st.button("Clear Data"):
         del st.session_state["saved_data"]
