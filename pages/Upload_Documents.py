@@ -1,4 +1,3 @@
-
 import pathlib
 import pandas as pd
 import streamlit as st
@@ -28,7 +27,9 @@ with upload_column:
     txn_file = st.file_uploader(label="Upload file", label_visibility="collapsed")
 
 with bank_label_column:
-    bank_name = st.text_input(label="Bank Name", value=_DEFAULT_BANK_NAME, label_visibility="collapsed").strip()
+    bank_name = st.text_input(
+        label="Bank Name", value=_DEFAULT_BANK_NAME, label_visibility="collapsed"
+    ).strip()
 
 if txn_file is None:
     st.info("Please upload file to continue")
@@ -36,8 +37,5 @@ else:
     if bank_name == "":
         bank_name = _DEFAULT_BANK_NAME
 
-    st.session_state["data"] = {
-        "txn_file": txn_file,
-        "bank_name": bank_name
-    }
+    st.session_state["data"] = {"txn_file": txn_file, "bank_name": bank_name}
     st.write("Head over to the Formatter page!")
