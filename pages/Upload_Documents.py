@@ -5,6 +5,9 @@ import streamlit as st
 
 _DEFAULT_BANK_NAME = "Bank-1"
 
+pd.options.display.float_format = "{:,.2f}".format
+st.set_page_config(layout="wide")
+
 folder_path = pathlib.Path(__file__).parent.parent
 
 st.title("Upload Documents")
@@ -26,7 +29,6 @@ with upload_column:
 
 with bank_label_column:
     bank_name = st.text_input(label="Bank Name", value=_DEFAULT_BANK_NAME, label_visibility="collapsed").strip()
-
 
 if txn_file is None:
     st.info("Please upload file to continue")
