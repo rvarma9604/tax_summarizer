@@ -1,5 +1,5 @@
-Date,Description,Debit Amount,Credit Amount
-01-01-2022,Bank Interest,,100.5
-01-01-2022,Fuel,1000.0,
-02-01-2022,Grocery,237.67,
-05-02-2022,Ecommerce,,391.0
+DATE,TRANSACTION DETAILS,WITHDRAWAL AMT,DEPOSIT AMT
+01/01/2022,Bank Interest,,100.5
+01/01/2022,Fuel,1000.0,
+02/01/2022,Grocery,237.67,
+05/02/2022,Ecommerce,,391.0
