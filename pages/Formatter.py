@@ -42,6 +42,7 @@ def formatter():
 
     if from_date > to_date:
         st.error("From date cannot be less than To date")
+        return
 
     # data = st.session_state["data"]
     if st.session_state.get("saved_data", None) is None:
@@ -69,7 +70,6 @@ def formatter():
         txn_table.fillna(
             value={"WITHDRAWAL AMT": 0.0, "DEPOSIT AMT": 0.0}, inplace=True
         )
-        st.write(f"""{txn_table["DEPOSIT AMT"].sum()}""")
 
         txn_table = txn_table.sort_values(by="DATE", ascending=True).reset_index(
             drop=True
@@ -94,11 +94,17 @@ def formatter():
             f"""You don't have any recorded transaction from: {from_date} to: {to_date}.
             Try selecting a different date range"""
         )
+        return
 
     st.write("## Transaction History")
     st.dataframe(txn_table, use_container_width=True)
 
-    debit_table, credit_table = get_debit_credit_tables(txn_table)
+    if "debit_table" not in st.session_state or "credit_table" not in st.session_state:
+        debit_table, credit_table = get_debit_credit_tables(txn_table)
+    else:
+        debit_table = st.session_state["debit_table"]
+        credit_table = st.session_state["credit_table"]
+
     debit_col, credit_col = st.columns(2)
 
     with debit_col:
@@ -121,8 +127,8 @@ def formatter():
             credit_rename_col,
         ) = st.columns(4)
 
-        debit_descriptions = debit_table["TRANSACTION DETAILS"].unique()[:10]
-        credit_descriptions = credit_table["TRANSACTION DETAILS"].unique()[:10]
+        debit_descriptions = debit_table["TRANSACTION DETAILS"].unique()
+        credit_descriptions = credit_table["TRANSACTION DETAILS"].unique()
 
         debit_descriptions_map = {desc: desc for desc in debit_descriptions}
         credit_descriptions_map = {desc: desc for desc in credit_descriptions}
@@ -145,6 +151,7 @@ def formatter():
                 )
                 debit_descriptions_map[desc] = renamed_to
 
+        # credit
         with credit_desc_col:
             st.write("Rename Credit Description:")
             for desc in credit_descriptions:
@@ -163,6 +170,9 @@ def formatter():
                 )
                 credit_descriptions_map[desc] = renamed_to
 
+        st.session_state["debit_desc_map"] = debit_descriptions_map
+        st.session_state["credit_desc_map"] = credit_descriptions_map
+
         use_find_replace = st.radio(
             "Want to use find and replace?",
             options=["Yes", "No"],
@@ -178,6 +188,9 @@ def formatter():
 
             if "credit_fr_count" not in st.session_state:
                 st.session_state["credit_fr_count"] = 1
+
+            debit_find_replace_map = {}
+            credit_find_replace_map = {}
 
             with fr_placeholder.container():
                 (
@@ -200,14 +213,19 @@ def formatter():
 
                 with debit_find_desc_col:
                     for row in range(st.session_state["debit_fr_count"]):
-                        st.text_input(
+                        debit_find = st.text_input(
                             label=f"debit_f_{row}", label_visibility="collapsed"
                         )
+                        debit_find_replace_map[row] = (debit_find,)
 
                 with debit_replace_col:
                     for row in range(st.session_state["debit_fr_count"]):
-                        st.text_input(
+                        debit_replace = st.text_input(
                             label=f"debit_r_{row}", label_visibility="collapsed"
+                        )
+                        debit_find_replace_map[row] = (
+                            debit_find_replace_map[row][0],
+                            debit_replace,
                         )
 
                 # credit
@@ -224,18 +242,80 @@ def formatter():
 
                 with credit_find_desc_col:
                     for row in range(st.session_state["credit_fr_count"]):
-                        st.text_input(
+                        credit_find = st.text_input(
                             label=f"credit_f_{row}", label_visibility="collapsed"
                         )
+                        credit_find_replace_map[row] = (credit_find,)
 
                 with credit_replace_col:
                     for row in range(st.session_state["credit_fr_count"]):
-                        st.text_input(
+                        credit_replace = st.text_input(
                             label=f"credit_r_{row}", label_visibility="collapsed"
                         )
+                        credit_find_replace_map[row] = (
+                            credit_find_replace_map[row][0],
+                            credit_replace,
+                        )
+
+            st.session_state["debit_desc_fr_map"] = debit_find_replace_map
+            st.session_state["credit_desc_fr_map"] = credit_find_replace_map
+
+    if st.button("Update"):
+
+        def find_replace_logic(text, find_replace_mapping):
+            print(find_replace_mapping)
+            for key, value in find_replace_mapping.items():
+                print(key, text, value)
+                if key in text:
+                    return value
+            return text
+
+        debit_table["TRANSACTION DETAILS"] = debit_table["TRANSACTION DETAILS"].map(
+            st.session_state["debit_desc_map"]
+        )
+        debit_fr_transformed_map = {
+            row[0]: row[1] for row in st.session_state["debit_desc_fr_map"].values()
+        }
+        st.write(debit_fr_transformed_map)
+        debit_table["TRANSACTION DETAILS"] = debit_table["TRANSACTION DETAILS"].apply(
+            lambda desc: find_replace_logic(desc, debit_fr_transformed_map)
+        )
+        st.session_state["debit_table"] = debit_table
+
+        # credit
+        credit_table["TRANSACTION DETAILS"] = credit_table["TRANSACTION DETAILS"].map(
+            st.session_state["credit_desc_map"]
+        )
+        credit_fr_transformed_map = {
+            row[0]: row[1] for row in st.session_state["credit_desc_fr_map"].values()
+        }
+        credit_table["TRANSACTION DETAILS"] = credit_table["TRANSACTION DETAILS"].apply(
+            lambda desc: find_replace_logic(desc, credit_fr_transformed_map)
+        )
+        st.session_state["credit_table"] = credit_table
+
+        # find-replace logic
+
+        del st.session_state["debit_desc_map"]
+        del st.session_state["credit_desc_map"]
+        del st.session_state["debit_desc_fr_map"]
+        del st.session_state["credit_desc_fr_map"]
+        st.experimental_rerun()
 
     if st.button("Clear Data"):
-        del st.session_state["saved_data"]
+        session_keys_to_delete = [
+            "saved_data",
+            "debit_table",
+            "dredit_table",
+            "debit_desc_map",
+            "credit_desc_map",
+            "debit_desc_fr_map",
+            "credit_desc_fr_map",
+        ]
+        for key in session_keys_to_delete:
+            if key in st.session_state:
+                del st.session_state[key]
+
         st.experimental_rerun()
 
 
