@@ -28,9 +28,9 @@ def formatter():
     st.set_page_config(layout="wide")
     st.title("Formatter")
 
-    # if st.session_state.get("data", None) is None:
-    #     st.info("Please upload the data first and then come back to this page :smile:")
-    #     return
+    if st.session_state.get("data", None) is None:
+        st.info("Please upload the data first and then come back to this page :smile:")
+        return
 
     from_col, to_col = st.columns(2)
 
