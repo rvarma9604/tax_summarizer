@@ -19,12 +19,23 @@ def summarizer():
         debit_table[["TRANSACTION DETAILS", "WITHDRAWAL AMT"]]
         .groupby("TRANSACTION DETAILS")
         .sum()
+        .reset_index()
     )
+
+    debit_summary.loc[len(debit_summary)] = [
+        "TOTAL",
+        debit_summary["WITHDRAWAL AMT"].sum(),
+    ]
     credit_summary = (
         credit_table[["TRANSACTION DETAILS", "DEPOSIT AMT"]]
         .groupby("TRANSACTION DETAILS")
         .sum()
+        .reset_index()
     )
+    credit_summary.loc[len(credit_summary)] = [
+        "TOTAL",
+        credit_summary["DEPOSIT AMT"].sum(),
+    ]
 
     debit_col, credit_col = st.columns(2)
 
@@ -40,6 +51,7 @@ def summarizer():
     if st.button("Dump Data") and save_file_path is not None:
         debit_summary.to_csv("debit_summary.csv", index=False)
         credit_summary.to_csv("debit_summary.csv", index=False)
+
 
 if __name__ == "__main__":
     summarizer()
