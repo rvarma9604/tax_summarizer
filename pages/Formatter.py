@@ -257,12 +257,6 @@ def formatter():
                             credit_replace,
                         )
 
-            if "" in debit_find_replace_map:
-                del debit_find_replace_map[""]
-
-            if "" in credit_find_replace_map:
-                del credit_find_replace_map[""]
-
             st.session_state["debit_desc_fr_map"] = debit_find_replace_map
             st.session_state["credit_desc_fr_map"] = credit_find_replace_map
 
@@ -272,7 +266,7 @@ def formatter():
             # print(find_replace_mapping)
             for key, value in find_replace_mapping.items():
                 # print(key, text, value)
-                if key in text:
+                if key in text and key != "":
                     return value
             return text
 
