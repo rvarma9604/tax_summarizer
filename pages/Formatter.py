@@ -34,11 +34,16 @@ def formatter():
 
     from_col, to_col = st.columns(2)
 
+    default_from_date = st.session_state.get("from_date", None)
+    default_to_date = st.session_state.get("to_date", None)
+
     with from_col:
-        from_date = st.date_input("From date")
+        from_date = st.date_input("From date", default_from_date)
+        st.session_state["from_date"] = from_date
 
     with to_col:
-        to_date = st.date_input("To date")
+        to_date = st.date_input("To date", default_to_date)
+        st.session_state["to_date"] = to_date
 
     if from_date > to_date:
         st.error("From date cannot be less than To date")
@@ -101,6 +106,8 @@ def formatter():
 
     if "debit_table" not in st.session_state or "credit_table" not in st.session_state:
         debit_table, credit_table = get_debit_credit_tables(txn_table)
+        st.session_state["debit_table"] = debit_table
+        st.session_state["credit_table"] = credit_table
     else:
         debit_table = st.session_state["debit_table"]
         credit_table = st.session_state["credit_table"]
