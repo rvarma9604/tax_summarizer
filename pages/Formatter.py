@@ -44,9 +44,9 @@ def formatter():
         st.error("From date cannot be less than To date")
         return
 
-    # data = st.session_state["data"]
+    data = st.session_state["data"]
     if st.session_state.get("saved_data", None) is None:
-        txn_table = load_data("/home/rajat/Downloads/bank.csv")
+        txn_table = load_data(data["txn_file"])
         txn_table.columns = [col.strip().upper() for col in txn_table.columns]
         txn_table = txn_table[
             ["DATE", "TRANSACTION DETAILS", "WITHDRAWAL AMT", "DEPOSIT AMT"]
@@ -257,15 +257,21 @@ def formatter():
                             credit_replace,
                         )
 
+            if "" in debit_find_replace_map:
+                del debit_find_replace_map[""]
+
+            if "" in credit_find_replace_map:
+                del credit_find_replace_map[""]
+
             st.session_state["debit_desc_fr_map"] = debit_find_replace_map
             st.session_state["credit_desc_fr_map"] = credit_find_replace_map
 
     if st.button("Update"):
 
         def find_replace_logic(text, find_replace_mapping):
-            print(find_replace_mapping)
+            # print(find_replace_mapping)
             for key, value in find_replace_mapping.items():
-                print(key, text, value)
+                # print(key, text, value)
                 if key in text:
                     return value
             return text
@@ -317,6 +323,11 @@ def formatter():
                 del st.session_state[key]
 
         st.experimental_rerun()
+
+    save_file_path = st.text_input(label="Path to save .csv file")
+    if st.button("Dump Data") and save_file_path is not None:
+        st.session_state["debit_table"].to_csv("debit.csv", index=False)
+        st.session_state["credit_table"].to_csv("credit.csv", index=False)
 
 
 if __name__ == "__main__":
