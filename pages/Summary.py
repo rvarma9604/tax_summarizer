@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import streamlit as st
 
@@ -50,10 +51,21 @@ def summarizer():
         st.write("## Credit Summary")
         st.dataframe(credit_summary, use_container_width=True)
 
-    save_file_path = st.text_input(label="Path to save .csv file")
+    save_file_path = st.text_input(
+        label="Path to save .xlsx file",
+        value=st.session_state.get("save_file_path", ""),
+    )
     if st.button("Dump Data") and save_file_path is not None:
-        debit_summary.to_csv("debit_summary.csv", index=False)
-        credit_summary.to_csv("debit_summary.csv", index=False)
+        mode, if_sheet_exists = "w", None
+        if os.path.exists(save_file_path) and os.path.isfile(save_file_path):
+            mode, if_sheet_exists = "a", "replace"
+
+        st.session_state["save_file_path"] = save_file_path
+        with pd.ExcelWriter(
+            save_file_path, mode=mode, if_sheet_exists=if_sheet_exists
+        ) as writer:
+            debit_summary.to_excel(writer, sheet_name="Debit Summary", index=False)
+            credit_summary.to_excel(writer, sheet_name="Credit Summary", index=False)
 
 
 if __name__ == "__main__":

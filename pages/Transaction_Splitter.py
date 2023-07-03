@@ -1,5 +1,4 @@
 import os
-import numpy as np
 import pandas as pd
 import streamlit as st
 
@@ -104,12 +103,21 @@ def splitter():
     )
     credit_table_split = table_generator(credit_table, "DEPOSIT AMT", number_of_entries)
 
-    save_file_path = st.text_input(label="Path to save .csv file")
+    save_file_path = st.text_input(
+        label="Path to save .xlsx file",
+        value=st.session_state.get("save_file_path", ""),
+    )
     if st.button("Dump Data") and save_file_path is not None:
-        file_path = os.path.join(save_file_path, "txn_history.xlsx")
-        with pd.ExcelWriter(file_path) as writer:
-            excel_writer(debit_table_split, writer, "Debit")
-            excel_writer(credit_table_split, writer, "Credit")
+        mode, if_sheet_exists = "w", None
+        if os.path.exists(save_file_path) and os.path.isfile(save_file_path):
+            mode, if_sheet_exists = "a", "replace"
+
+        st.session_state["save_file_path"] = save_file_path
+        with pd.ExcelWriter(
+            save_file_path, mode=mode, if_sheet_exists=if_sheet_exists
+        ) as writer:
+            excel_writer(debit_table_split, writer, "Debit History Split")
+            excel_writer(credit_table_split, writer, "Credit History Split")
 
 
 if __name__ == "__main__":

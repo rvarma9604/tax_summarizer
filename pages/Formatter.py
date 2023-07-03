@@ -1,3 +1,4 @@
+import os
 import re
 import pandas as pd
 import streamlit as st
@@ -324,10 +325,25 @@ def formatter():
 
         st.experimental_rerun()
 
-    save_file_path = st.text_input(label="Path to save .csv file")
+    save_file_path = st.text_input(
+        label="Path to save .xlsx file",
+        value=st.session_state.get("save_file_path", ""),
+    )
     if st.button("Dump Data") and save_file_path is not None:
-        st.session_state["debit_table"].to_csv("debit.csv", index=False)
-        st.session_state["credit_table"].to_csv("credit.csv", index=False)
+        mode, if_sheet_exists = "w", None
+        if os.path.exists(save_file_path) and os.path.isfile(save_file_path):
+            mode, if_sheet_exists = "a", "replace"
+
+        st.session_state["save_file_path"] = save_file_path
+        with pd.ExcelWriter(
+            save_file_path, mode=mode, if_sheet_exists=if_sheet_exists
+        ) as writer:
+            st.session_state["debit_table"].to_excel(
+                writer, sheet_name="Debit History", index=False
+            )
+            st.session_state["credit_table"].to_excel(
+                writer, sheet_name="Credit History", index=False
+            )
 
 
 if __name__ == "__main__":
