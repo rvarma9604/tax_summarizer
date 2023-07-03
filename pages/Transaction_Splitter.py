@@ -1,3 +1,4 @@
+import math
 import os
 import pandas as pd
 import streamlit as st
@@ -61,7 +62,7 @@ def excel_writer(dataframes, writer, sheet_name, padding=1):
                 sheet_name=sheet_name,
                 index=False,
                 startrow=curr_row,
-                startcol=column_size + padding,
+                startcol=column_size + 1,
                 float_format="%.2f",
             )
             curr_row += (len(dataframes[i]) + 1) + padding
