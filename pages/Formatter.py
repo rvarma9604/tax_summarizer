@@ -1,6 +1,5 @@
 import re
 import pandas as pd
-from requests import session
 import streamlit as st
 from datetime import datetime
 
