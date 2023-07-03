@@ -44,9 +44,9 @@ def table_generator(transactions, amount_column, number_of_entries):
     return dataframes
 
 
-def excel_writer(dataframes, writer, sheet_name, padding=1):
+def excel_writer(dataframes, writer, sheet_name, padding=3):
     column_size = len(dataframes[0].columns)
-    curr_row = 0
+    curr_row = padding
     for i in range(len(dataframes)):
         if i % 2 == 0:
             dataframes[i].to_excel(
@@ -65,7 +65,7 @@ def excel_writer(dataframes, writer, sheet_name, padding=1):
                 startcol=column_size + 1,
                 float_format="%.2f",
             )
-            curr_row += (len(dataframes[i]) + 1) + padding
+            curr_row += (len(dataframes[i]) + 1) + (1 + padding)
 
 
 def splitter():
@@ -109,13 +109,21 @@ def splitter():
         value=st.session_state.get("save_file_path", ""),
     )
     if st.button("Dump Data") and save_file_path is not None:
-        mode, if_sheet_exists = "w", None
+        mode = "w"
         if os.path.exists(save_file_path) and os.path.isfile(save_file_path):
-            mode, if_sheet_exists = "a", "replace"
+            mode = "a"
 
         st.session_state["save_file_path"] = save_file_path
+        # overwrite
         with pd.ExcelWriter(
-            save_file_path, mode=mode, if_sheet_exists=if_sheet_exists
+            save_file_path, mode=mode, if_sheet_exists="replace"
+        ) as writer:
+            pd.DataFrame().to_excel(writer, sheet_name="Debit History Split")
+            pd.DataFrame().to_excel(writer, sheet_name="Credit History Split")
+
+        # overlay
+        with pd.ExcelWriter(
+            save_file_path, mode=mode, if_sheet_exists="overlay"
         ) as writer:
             excel_writer(debit_table_split, writer, "Debit History Split")
             excel_writer(credit_table_split, writer, "Credit History Split")
