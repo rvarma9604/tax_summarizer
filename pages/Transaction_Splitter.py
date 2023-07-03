@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
+pd.options.display.float_format = "{:,.2f}".format
+
 
 def table_generator(transactions, amount_column, number_of_entries):
     dataframes = []
