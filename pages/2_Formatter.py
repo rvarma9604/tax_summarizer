@@ -329,12 +329,12 @@ def formatter():
         label="Path to save .xlsx file",
         value=st.session_state.get("save_file_path", ""),
     )
+    st.session_state["save_file_path"] = save_file_path
     if st.button("Dump Data") and save_file_path is not None:
         mode, if_sheet_exists = "w", None
         if os.path.exists(save_file_path) and os.path.isfile(save_file_path):
             mode, if_sheet_exists = "a", "replace"
 
-        st.session_state["save_file_path"] = save_file_path
         with pd.ExcelWriter(
             save_file_path, mode=mode, if_sheet_exists=if_sheet_exists
         ) as writer:

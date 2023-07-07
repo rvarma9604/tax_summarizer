@@ -108,12 +108,12 @@ def splitter():
         label="Path to save .xlsx file",
         value=st.session_state.get("save_file_path", ""),
     )
+    st.session_state["save_file_path"] = save_file_path
     if st.button("Dump Data") and save_file_path is not None:
         mode = "w"
         if os.path.exists(save_file_path) and os.path.isfile(save_file_path):
             mode = "a"
 
-        st.session_state["save_file_path"] = save_file_path
         # overwrite
         with pd.ExcelWriter(
             save_file_path, mode=mode, if_sheet_exists="replace"
